@@ -70,7 +70,7 @@
 </template>
 
 <script>
-  import { defineComponent } from 'vue';
+  import { defineComponent, ref } from 'vue';
   import StatusBadge from './StatusBadge.vue';
   import PriorityBadge from './PriorityBadge.vue';
 
@@ -96,20 +96,21 @@
           day: 'numeric',
         });
       };
-      let showDeleteConfirm = false;
+      const showDeleteConfirm = ref(false);
 
       const handleEdit = () => {
-        emit('update', props.task._id, props.task);
+        emit('update', props.task);
       };
 
       const handleDelete = () => {
-        showDeleteConfirm = true;
+        showDeleteConfirm.value = true;
       };
 
       const confirmDelete = () => {
         if (confirm('Are you sure you want to delete this task?')) {
           emit('delete', props.task._id);
         }
+        showDeleteConfirm.value = false;
       };
 
       return {
@@ -117,7 +118,7 @@
         handleEdit,
         handleDelete,
         confirmDelete,
-        showDeleteConfirm: showDeleteConfirm,
+        showDeleteConfirm,
       };
     },
   });
