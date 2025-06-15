@@ -12,6 +12,27 @@ class AppError extends Error {
 }
 
 const errorHandler = (err, req, res, next) => {
+  // Mongoose validation error
+  if (err.name === 'ValidationError') {
+    err.statusCode = 400;
+    err.status = 'fail';
+    err.isOperational = true;
+  }
+  // Mongoose cast error
+  if (err.name === 'CastError') {
+    err.statusCode = 400;
+    err.status = 'fail';
+    err.isOperational = true;
+  }
+  // MongoDB duplicate key error
+  if (err.code && err.code === 11000) {
+    err.statusCode = 400;
+    err.status = 'fail';
+    err.name = 'MongoError';
+    err.message = 'Duplicate key error';
+    err.isOperational = true;
+  }
+
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 
@@ -25,6 +46,7 @@ const errorHandler = (err, req, res, next) => {
       success: false,
       error: {
         code: err.status,
+        name: err.name,
         message: err.message,
         stack: err.stack,
       },
@@ -36,6 +58,7 @@ const errorHandler = (err, req, res, next) => {
         success: false,
         error: {
           code: err.status,
+          name: err.name,
           message: err.message,
         },
       });
@@ -50,6 +73,7 @@ const errorHandler = (err, req, res, next) => {
         success: false,
         error: {
           code: 'error',
+          name: err.name,
           message: 'Something went wrong',
         },
       });

@@ -1,6 +1,6 @@
 module.exports = {
   testEnvironment: 'node',
-  coverageDirectory: 'coverage',
+  testMatch: ['**/__tests__/**/*.js', '**/?(*.)+(spec|test).js'],
   collectCoverageFrom: [
     'src/**/*.js',
     '!src/index.js',
@@ -15,7 +15,7 @@ module.exports = {
       statements: 80,
     },
   },
-  testMatch: ['**/__tests__/**/*.js', '**/?(*.)+(spec|test).js'],
+  setupFilesAfterEnv: ['<rootDir>/src/tests/setup.js'],
   verbose: true,
   forceExit: true,
   clearMocks: true,

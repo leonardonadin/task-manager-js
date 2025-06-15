@@ -34,22 +34,25 @@ app.use(morgan('combined', { stream: { write: message => logger.info(message.tri
 // Routes
 app.use('/api/v1', routes);
 
+// 404 handler
+app.use((req, res, next) => {
+  const error = new Error('Not Found');
+  error.statusCode = 404;
+  next(error);
+});
+
 // Error handling
 app.use(errorHandler);
 
-// Database connection
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => {
+// Database connection function
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
     logger.info('Connected to MongoDB');
-  })
-  .catch(error => {
+  } catch (error) {
     logger.error('MongoDB connection error:', error);
     process.exit(1);
-  });
+  }
+};
 
-// Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  logger.info(`Server is running on port ${PORT}`);
-}); 
+module.exports = { app, mongoose, connectDB }; 

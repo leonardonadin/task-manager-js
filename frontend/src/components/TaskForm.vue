@@ -99,7 +99,7 @@
 </template>
 
 <script>
-  import { ref, onMounted } from 'vue';
+  import { ref, watch } from 'vue';
 
   export default {
     name: 'TaskForm',
@@ -119,14 +119,47 @@
         dueDate: '',
       });
 
-      onMounted(() => {
-        if (props.task) {
-          formData.value = { ...props.task };
-        }
-      });
+      // Watch for changes in the task prop
+      watch(
+        () => props.task,
+        newTask => {
+          if (newTask) {
+            // Format the date for the input field (YYYY-MM-DD)
+            const dueDate = newTask.dueDate
+              ? new Date(newTask.dueDate).toISOString().split('T')[0]
+              : '';
+            formData.value = {
+              ...newTask,
+              dueDate,
+            };
+          } else {
+            // Reset form when task is null
+            formData.value = {
+              title: '',
+              description: '',
+              priority: 'medium',
+              status: 'pending',
+              dueDate: '',
+            };
+          }
+        },
+        { immediate: true }
+      );
 
       const handleSubmit = () => {
-        emit('save', { ...formData.value });
+        // Validate form data
+        if (!formData.value.title.trim()) {
+          return;
+        }
+
+        // Format the data before emitting
+        const taskData = {
+          ...formData.value,
+          // Convert empty string to null for dueDate
+          dueDate: formData.value.dueDate || null,
+        };
+
+        emit('save', taskData);
       };
 
       return {

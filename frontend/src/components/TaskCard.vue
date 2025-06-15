@@ -99,7 +99,7 @@
       let showDeleteConfirm = false;
 
       const handleEdit = () => {
-        emit('update', props.task._id, props.task);
+        emit('update', props.task);
       };
 
       const handleDelete = () => {

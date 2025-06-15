@@ -1,7 +1,7 @@
 import { createStore } from 'vuex';
 import axios from 'axios';
 
-const API_URL = process.env.VUE_APP_API_URL || 'http://localhost:3000/api';
+const API_URL = process.env.VUE_APP_API_URL || 'http://localhost:3000/api/v1';
 
 export default createStore({
   state: {
@@ -23,9 +23,19 @@ export default createStore({
       state.tasks = [...state.tasks, task];
     },
     UPDATE_TASK(state, updatedTask) {
+      if (!updatedTask || !updatedTask._id) {
+        console.error('Invalid task update:', updatedTask);
+        return;
+      }
       const index = state.tasks.findIndex(task => task._id === updatedTask._id);
       if (index !== -1) {
-        state.tasks.splice(index, 1, updatedTask);
+        state.tasks = [
+          ...state.tasks.slice(0, index),
+          updatedTask,
+          ...state.tasks.slice(index + 1),
+        ];
+      } else {
+        console.warn('Task not found for update:', updatedTask._id);
       }
     },
     DELETE_TASK(state, taskId) {

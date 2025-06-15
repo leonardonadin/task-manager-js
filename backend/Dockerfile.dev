@@ -1,9 +1,12 @@
-FROM node:18-alpine
+FROM node:20-bullseye-slim
 
 WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
+
+RUN apt-get update && apt-get install -y libcurl4 && rm -rf /var/lib/apt/lists/*
+
 RUN npm install
 
 # Copy source code

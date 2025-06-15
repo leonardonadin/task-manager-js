@@ -59,17 +59,17 @@
         v-for="task in filteredTasks"
         :key="task._id"
         :task="task"
-        @update="updateTask"
+        @update="handleEditTask"
         @delete="deleteTask"
       />
     </div>
 
-    <!-- Add Task Modal -->
+    <!-- Add/Edit Task Modal -->
     <TaskForm
-      v-if="showAddTaskModal"
-      :task="null"
-      @save="addTask"
-      @cancel="showAddTaskModal = false"
+      v-if="showAddTaskModal || editingTask"
+      :task="editingTask"
+      @save="handleSaveTask"
+      @cancel="closeTaskModal"
     />
   </div>
 </template>
@@ -89,6 +89,7 @@
     setup() {
       const store = useStore();
       const showAddTaskModal = ref(false);
+      const editingTask = ref(null);
       const searchQuery = ref('');
       const statusFilter = ref('');
       const priorityFilter = ref('');
@@ -140,21 +141,30 @@
       });
 
       // Methods
-      const addTask = async task => {
+      const handleEditTask = task => {
+        editingTask.value = { ...task };
+        showAddTaskModal.value = true;
+      };
+
+      const handleSaveTask = async taskData => {
         try {
-          await store.dispatch('createTask', task);
-          showAddTaskModal.value = false;
+          if (editingTask.value) {
+            await store.dispatch('updateTask', {
+              id: editingTask.value._id,
+              taskData: { ...taskData },
+            });
+          } else {
+            await store.dispatch('createTask', taskData);
+          }
+          closeTaskModal();
         } catch (error) {
-          console.error('Error adding task:', error);
+          console.error('Error saving task:', error);
         }
       };
 
-      const updateTask = async task => {
-        try {
-          await store.dispatch('updateTask', task);
-        } catch (error) {
-          console.error('Error updating task:', error);
-        }
+      const closeTaskModal = () => {
+        showAddTaskModal.value = false;
+        editingTask.value = null;
       };
 
       const deleteTask = async taskId => {
@@ -173,6 +183,7 @@
       // Return all the properties and methods that the template needs
       return {
         showAddTaskModal,
+        editingTask,
         searchQuery: searchQueryComputed,
         statusFilter: statusFilterComputed,
         priorityFilter: priorityFilterComputed,
@@ -180,8 +191,9 @@
         loading,
         error,
         filteredTasks,
-        addTask,
-        updateTask,
+        handleEditTask,
+        handleSaveTask,
+        closeTaskModal,
         deleteTask,
       };
     },
